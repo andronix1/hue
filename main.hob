@@ -1,0 +1,58 @@
+import "hue.hob" as hue;
+
+use hue.query;
+use hue.div;
+use hue.p;
+use hue.button;
+use hue.input;
+use hue.String;
+
+fun TodoList() -> hue.Element {
+    return hue.create("div").addClass("todo-list");
+}
+
+fun TodoItem(content: String) -> hue.Element {
+    return div(&{
+        hue.create("p").setTextContentString(content),
+        button("Ready")
+            .onClick(fun (self: hue.Element) -> void {
+                self.parent().delete();
+            })
+    } as _);
+}
+
+fun AddTodoButton() -> hue.Element {
+    return button("Add")
+        .onClick(fun (self: hue.Element) -> void {
+            var content = query("input").textValue();
+            query(".todo-list").append(TodoItem(content));
+        });
+    return input("Enter name");
+}
+
+fun NameInput() -> hue.Element {
+    return input("Enter name");
+}
+
+fun AddTodoForm() -> hue.Element {
+    return div(&{
+        NameInput(),
+        AddTodoButton()
+    } as _);
+}
+
+fun Title() -> hue.Element {
+    return p("Todo list");
+}
+
+fun App() -> hue.Element {
+    return div(&{
+        Title(),
+        AddTodoForm(),
+        TodoList()
+    } as _);
+}
+
+fun main() -> void {
+    query("body").append(App());
+}

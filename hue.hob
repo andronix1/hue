@@ -1,0 +1,55 @@
+# bindings
+public struct Element { id: i32 }
+public struct String { id: i32 }
+
+public extern(createElement) fun create(tag: []u8) -> Element
+public extern(queryElement) fun query(query: []u8) -> Element
+
+public extern(deleteElement) fun (Element) delete() -> void 
+public extern(appendElement) fun (Element) append(other: Element) -> Element
+public extern(elementAddClass) fun (Element) addClass(class: []u8) -> Element
+public extern(elementSetTextContent) fun (Element) setTextContent(text: []u8) -> Element
+public extern(elementSetTextContentString) fun (Element) setTextContentString(string: String) -> Element
+public extern(elementSetId) fun (Element) setId(id: []u8) -> Element
+public extern(elementGetParent) fun (Element) parent() -> Element
+public extern(elementSetOnClick) fun (Element) onClick(handler: fun (Element) -> void) -> Element
+# TODO: return slice
+public extern(elementGetTextValue) fun (Element) textValue() -> String
+public extern(elementSetTextValue) fun (Element) setTextValue(text: []u8) -> Element
+public extern(elementSetPlaceholder) fun (Element) setPlaceholder(text: []u8) -> Element
+
+# extensions
+public fun (Element) addClasses(classes: [][]u8) -> Element {
+    var i: usize = 0;
+    while i < classes.length {
+        self.addClass(classes[i]);
+        i += 1;
+    }
+    return self;
+}
+
+public fun (Element) appendMany(children: []Element) -> Element {
+    var i: usize = 0;
+    while i < children.length {
+        self.append(children[i]);
+        i += 1;
+    }
+    return self;
+}
+
+# constructors
+public fun div(children: []Element) -> Element {
+    return create("div").appendMany(children);
+}
+
+public fun input(value: []u8) -> Element {
+    return create("input").setPlaceholder(value);
+}
+
+public fun button(text: []u8) -> Element {
+    return create("button").setTextContent(text);
+}
+
+public fun p(text: []u8) -> Element {
+    return create("p").setTextContent(text);
+}
