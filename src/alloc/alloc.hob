@@ -1,0 +1,98 @@
+import "wasm.hob" as wasm;
+import "common.hob" as common;
+import "region.hob" as region;
+
+use region.Region;
+
+struct Allocator {
+    nativeHeap: wasm.Heap,
+    region: *Region
+}
+
+var allocator: Allocator;
+
+public fun init() -> bool {
+    if !allocator.nativeHeap.init() {
+        return false;
+    }
+    final ok = allocator.nativeHeap.getMemory() unwrap initialMemory;
+    if !ok {
+        return false;
+    }
+    allocator.region = initialMemory.base as _;
+    allocator.region.init(initialMemory.size, true);
+    return true;
+}
+
+fun (*void) at(idx: usize) -> *u8 {
+    return (self as usize + idx) as _;
+}
+
+public fun reallocate(ptr: *void, size: usize) -> ?*void {
+    var region = region.fromPtr(ptr);
+    if region.cap() >= size {
+        return ptr as _;
+    }
+    var ok = allocate(size) unwrap new_ptr;
+    if !ok {
+        return null;
+    }
+    var i: usize = 0;
+    while i < region.cap() {
+        new_ptr.at(i).* = ptr.at(i).*;
+        i += 1;
+    }
+    free(ptr);
+    return new_ptr as _;
+}
+
+public fun allocate(size: usize) -> ?*void {
+    var region = allocator.region;
+    while true {
+        if region.*.isFree && region.cap() > size {
+            return region.take(size) as _;
+        }
+        if region.next() unwrap next {
+            region = next;
+        } else {
+            break;
+        }
+    }
+    return null;
+}
+
+public fun free(ptr: *void) -> void {
+    region.fromPtr(ptr).free();
+    defragmentate();
+}
+
+public fun defragmentate() -> void {
+    var region = allocator.region;
+    while true {
+        if region.*.isFree {
+            region.compressAfter();
+        }
+        if region.next() unwrap next {
+            region = next;
+        } else {
+            break;
+        }
+    }
+}
+
+public fun remains() -> usize {
+    var region = allocator.region;
+    var result: usize = 0;
+    while true {
+        if region.*.isFree {
+            result += region.cap();
+        }
+        if region.next() unwrap next {
+            region = next;
+        } else {
+            break;
+        }
+    }
+    
+    return result;
+}

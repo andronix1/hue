@@ -1,0 +1,94 @@
+import "pool.hob" as pool;
+import "string.hob" as string;
+
+use string.String;
+
+# bindings 
+
+public struct Element { id: i32 }
+
+type EventListener = fun (Element) -> void;
+
+public extern (jsDomCreateElement) fun create(tag: []u8) -> Element
+public extern (jsDomQueryElement) fun query(str: []u8) -> Element
+
+public extern (jsDomDeleteElement) fun (Element) delete() -> void
+public extern (jsDomAppendElement) fun (Element) append(what: Element) -> Element
+public extern (jsDomGetParent) fun (Element) parent() -> Element
+
+public extern (jsDomAddClass) fun (Element) addClass(class: []u8) -> Element
+public extern (jsDomSetTextContent) fun (Element) setTextContent(str: []u8) -> Element
+public extern (jsDomSetTextContentStr) fun (Element) setTextContentStr(str: String) -> Element
+public extern (jsDomSetListener) fun (Element) on(event: []u8, callback: EventListener) -> Element
+public extern (jsDomSetAttr) fun (Element) setAttr(name: []u8, value: []u8) -> Element
+public extern (jsDomGetValueStr) fun (Element) getValueStr() -> String 
+
+# additional
+
+fun (Element) getPoolId() -> pool.Id {
+    return pool.newId(self.id);
+}
+
+public fun (Element) leak() -> void {
+    pool.leak(self.getPoolId());
+}
+
+public fun (Element) addClasses(classes: [][]u8) -> Element {
+    var i: usize = 0;
+    while i < classes.length {
+        self.addClass(classes[i]);
+        i += 1;
+    }
+    return self;
+}
+
+public fun (Element) appendMany(elements: []Element) -> Element {
+    var i: usize = 0;
+    while i < elements.length {
+        self.append(elements[i]);
+        i += 1;
+    }
+    return self;
+}
+
+public fun (Element) onSubmit(callback: EventListener) -> Element {
+    return self.on("submit", callback);
+}
+
+public fun (Element) onClick(callback: EventListener) -> Element {
+    return self.on("click", callback);
+}
+
+public fun (Element) setPlaceholder(value: []u8) -> Element {
+    return self.setAttr("placeholder", value);
+}
+
+public fun (Element) setValue(value: []u8) -> Element {
+    return self.setAttr("value", value);
+}
+
+public fun (Element) setId(value: []u8) -> Element {
+    return self.setAttr("id", value);
+}
+
+public fun (Element) setType(value: []u8) -> Element {
+    return self.setAttr("type", value);
+}
+
+# short 
+
+public fun h1(content: []u8) -> Element {
+    return create("h1").setTextContent(content);
+}
+
+public fun p(content: []u8) -> Element {
+    return create("p").setTextContent(content);
+}
+
+public fun button(content: []u8) -> Element {
+    return create("button").setTextContent(content);
+}
+
+public fun form() -> Element { return create("form"); }
+public fun div() -> Element { return create("div"); }
+public fun input() -> Element { return create("input"); }

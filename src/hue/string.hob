@@ -1,0 +1,12 @@
+import "pool.hob" as pool;
+
+public struct String { id: i32 }
+
+fun (String) getPoolId() -> pool.Id {
+    return pool.newId(self.id);
+}
+
+public fun (String) leak() -> void {
+    pool.leak(self.getPoolId());
+}
+

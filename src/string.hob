@@ -1,0 +1,79 @@
+import "alloc/alloc.hob" as alloc;
+import "hue/log.hob" as log;
+import "panic.hob" as panic;
+
+from alloc use { allocate };
+
+public struct String {
+    public buffer: []u8,
+    cap: usize # 🧢🧢🧢
+}
+
+public fun new() -> String {
+    var buffer: []u8;
+    buffer.length = 0;
+    return struct String {
+        buffer: buffer,
+        cap: 0
+    };
+}
+
+fun withCapacity(cap: usize) -> String {
+    var result = new();
+    result.reserve(cap);
+    return result;
+}
+
+fun (*String) reserve(cap: usize) -> void {
+    var mem: ?*void;
+    if self.*.cap == 0 {
+        mem = alloc.allocate(cap);
+    } else {
+        mem = alloc.reallocate(self.*.buffer.raw as _, cap);
+    }
+    if mem unwrap valid_mem {
+        self.*.buffer.raw = valid_mem as _;
+    } else {
+        panic.halt("failed to allocate string memory");
+    }
+    self.*.cap = cap;
+}
+
+fun (*String) appendChar(c: u8) -> void {
+    if self.*.buffer.length >= self.*.cap {
+        self.*.reserve(self.*.buffer.length + 1);
+    }
+    self.*.buffer[self.*.buffer.length] = c;
+    self.*.buffer.length += 1;
+}
+
+public fun (*String) appendSlice(slice: []u8) -> void {
+    var i: usize = 0;
+    while i < slice.length {
+        self.appendChar(slice[i]);
+        i += 1;
+    }
+}
+
+public fun (*String) append(other: String) -> void {
+    self.appendSlice(other.buffer);
+}
+
+public fun fromSlice(slice: []u8) -> String {
+    var result = withCapacity(slice.length);
+    result.appendSlice(slice);
+    return result;
+}
+
+public fun (*String) print() -> void {
+    var b: []u8;
+    b.length = self.*.buffer.length;
+    b.raw = self.*.buffer.raw;
+    log.str(b); # TODO: what?!
+}
+
+public fun (*String) free() -> void {
+    alloc.free(self.*.buffer.raw as _);
+    self.*.buffer.length = 0;
+    self.*.cap = 0;
+}

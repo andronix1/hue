@@ -1,0 +1,90 @@
+import "hue/hue.hob" as hue;
+import "alloc/alloc.hob" as alloc;
+import "panic.hob" as panic;
+import "string.hob" as string;
+
+use hue.log;
+use hue.dom;
+use hue.string.String;
+
+from dom use {h1, button, input, form, div};
+
+fun TodoList() -> dom.Element {
+    return div()
+        .setId("todo-list");
+}
+
+fun getTodoList() -> dom.Element {
+    return dom.query("#todo-list");
+}
+
+fun TodoItem(content: String) -> dom.Element {
+    var result = div().addClass("todo-item").appendMany(&{
+        dom
+            .create("p")
+            .setTextContentStr(content),
+        button("Delete").onClick(fun (self: dom.Element) -> void {
+            self.parent().delete();
+        })
+    } as _);
+    content.leak();
+    return result;
+}
+
+fun addTodo(content: String) -> void {
+    getTodoList().append(TodoItem(content));
+}
+
+fun AddTodoForm() -> dom.Element {
+    var onAddTodo = fun (self: dom.Element) -> void {
+        var todoInput = dom.query("#new-todo-content");
+        addTodo(todoInput.getValueStr());
+        todoInput.leak();
+    };
+    return form().appendMany(&{
+        input()
+            .setId("new-todo-content")
+            .setPlaceholder("Enter content")
+            .setType("text"),
+        input()
+            .setValue("Add")
+            .setType("submit")
+    } as _).onSubmit(onAddTodo);
+}
+
+fun Title() -> dom.Element {
+    return h1("TODO OT PLEASE feat. hue");
+}
+
+fun Center(children: []dom.Element) -> dom.Element {
+    return div()
+        .addClass("center")
+        .appendMany(children);
+}
+
+fun App() -> dom.Element {
+    return Center(&{
+        Title(),
+        AddTodoForm(),
+        TodoList()
+    } as _);
+}
+
+fun main() -> void {
+    setupEnvironment();
+    dom.query("body").append(App());
+}
+
+fun setupEnvironment() -> void {
+    if !alloc.init() {
+        panic.halt("failed to init an allocator");   
+    }
+    var str = string.new();
+    defer str.free();
+    str.appendSlice("hello world!");
+    str.appendSlice(" how r u?)");
+    var str2 = string.fromSlice(" i am ok)");
+    defer str2.free();
+    str.append(str2);
+    str.print();
+}

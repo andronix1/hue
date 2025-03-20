@@ -1,0 +1,5 @@
+public extern(jsLogStr) fun str(str: []u8) -> void
+public extern(jsLogErr) fun err(str: []u8) -> void
+public extern(jsLogInt) fun int(int: i32) -> void
+
+

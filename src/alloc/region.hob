@@ -1,0 +1,57 @@
+public struct Region {
+    public size: usize,
+    public isFree: bool,
+    public isEnd: bool
+}
+
+public fun fromPtr(ptr: *void) -> *Region {
+    return (ptr as usize - Region.sizeof) as _;
+}
+
+public fun (*Region) init(size: usize, isEnd: bool) -> void {
+    self.*.size = size;
+    self.*.isFree = true;
+    self.*.isEnd = isEnd;
+}
+
+public fun (*Region) next() -> ?*Region {
+    if self.*.isEnd {
+        return null;
+    }
+    return (self as usize + self.*.size) as _ as _;
+}
+
+public fun (*Region) cap() -> usize {
+    return self.*.size - Region.sizeof;
+}
+
+public fun (*Region) take(cap: usize) -> *void {
+    self.*.isFree = false;
+    if self.*.size > 2 * Region.sizeof + cap {
+        ((self.ptr() as usize + cap) as *Region).init(self.*.size - Region.sizeof - cap, self.*.isEnd);
+        self.*.size = Region.sizeof + cap;
+        self.*.isEnd = false;
+    } 
+    return self.ptr();
+}
+
+public fun (*Region) compressAfter() -> void {
+    while self.next() unwrap next {
+        if next.*.isFree {
+            self.*.size += next.*.size;
+            self.*.isEnd = next.*.isEnd;
+        } else {
+            break;
+        }
+    }
+}
+
+public fun (*Region) free() -> void {
+    self.*.isFree = true;
+}
+
+public fun (*Region) ptr() -> *void {
+    return (self as usize + Region.sizeof) as _;
+}
+
+

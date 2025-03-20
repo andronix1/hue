@@ -1,0 +1,18 @@
+import "common.hob" as common;
+
+use common.Memory;
+
+public extern(__heap_base) var heapBase: void;
+public extern(__heap_end) var heapEnd: void;
+
+public struct Heap {
+    _a: i32
+}
+
+public fun (*Heap) init() -> bool {
+    return true;
+}
+
+public fun (*Heap) getMemory() -> ?Memory {
+    return common.newMemory(&heapBase, &heapEnd as usize - &heapBase as usize) as _;
+}

@@ -1,0 +1,11 @@
+public struct Memory {
+    public base: *void,
+    public size: usize
+}
+
+public fun newMemory(base: *void, size: usize) -> Memory {
+    return struct Memory {
+        base: base,
+        size: size
+    };
+}

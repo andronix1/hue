@@ -1,0 +1,7 @@
+import "hue/log.hob" as log;
+
+public fun halt(str: []u8) -> void {
+    log.err(str);
+    # i dont know how to exit wasm lol
+    ((-1) as *u8).* = 0;
+}

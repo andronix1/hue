@@ -1,0 +1,9 @@
+public struct Id { id: i32 }
+
+public fun newId(id: i32) -> Id {
+    return struct Id {
+        id: id
+    };
+}
+
+public extern(jsPoolApiLeak) fun leak(id: Id) -> void
