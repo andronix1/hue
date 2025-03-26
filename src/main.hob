@@ -81,8 +81,9 @@ fun setupEnvironment() -> void {
     }
     var str = string.new();
     defer str.free();
-    str.appendSlice("hello world!");
-    str.appendSlice(" how r u?)");
+    str.appendSlice("skill 1");
+    str.appendSlice("skill 3");
+    str.appendSlice("HUE IS THE BEST FRAMEWWORK LOOOLLOLOL");
     var str2 = string.fromSlice(" i am ok)");
     defer str2.free();
     str.append(str2);
